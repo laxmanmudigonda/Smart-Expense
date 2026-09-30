@@ -27,7 +27,7 @@ SmartExpense answers these questions using the authenticated user's own SQLite r
 
 > **Video demonstration:** Coming soon. Add the final CS50 video URL here before submission.
 >
-> **Live application:** Deployment in progress.
+> **Live application:** [laxman4355.pythonanywhere.com](https://laxman4355.pythonanywhere.com)
 
 ## Features
 
@@ -172,7 +172,7 @@ Every state-changing form requires a session-bound CSRF token. Destructive opera
 
 ## Deployment
 
-SmartExpense requires a Python/WSGI hosting service; GitHub Pages cannot run its Flask backend. For a small demonstration deployment, it can be hosted on PythonAnywhere with a persistent SQLite database. Production deployments should set all security-related environment values, serve the site over HTTPS, and use a persistent database volume.
+SmartExpense is deployed on PythonAnywhere at [laxman4355.pythonanywhere.com](https://laxman4355.pythonanywhere.com). It requires a Python/WSGI hosting service because GitHub Pages cannot run its Flask backend. Production deployments should set all security-related environment values, serve the site over HTTPS, and use a persistent database volume.
 
 ## Limitations and future improvements
 
