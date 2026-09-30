@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}Access denied · SmartExpense{% endblock %}
+{% block main %}
+<section class="container text-center py-5">
+    <p class="display-1 fw-bold text-danger mb-0">403</p>
+    <h1 class="h3">Access denied</h1>
+    <p class="text-secondary">You do not have permission to access this resource.</p>
+    <a class="btn btn-primary" href="{{ url_for('landing') }}">Return home</a>
+</section>
+{% endblock %}

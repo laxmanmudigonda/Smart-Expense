@@ -1,0 +1,25 @@
+{% extends "layout.html" %}
+
+{% block title %}Log in · SmartExpense{% endblock %}
+
+{% block main %}
+<section class="container py-5">
+    <div class="auth-card mx-auto p-4 p-md-5">
+        <h1 class="h2 mb-2">Welcome back</h1>
+        <p class="text-secondary mb-4">Log in to view your financial dashboard.</p>
+        <form method="post" novalidate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="mb-3">
+                <label class="form-label" for="username">Username</label>
+                <input class="form-control" id="username" name="username" autocomplete="username" required autofocus>
+            </div>
+            <div class="mb-4">
+                <label class="form-label" for="password">Password</label>
+                <input class="form-control" id="password" name="password" type="password" autocomplete="current-password" required>
+            </div>
+            <button class="btn btn-primary w-100" type="submit">Log in</button>
+        </form>
+        <p class="text-center text-secondary mt-4 mb-0">New here? <a href="{{ url_for('register') }}">Create an account</a>.</p>
+    </div>
+</section>
+{% endblock %}

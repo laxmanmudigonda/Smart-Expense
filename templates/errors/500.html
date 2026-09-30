@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}Something went wrong · SmartExpense{% endblock %}
+{% block main %}
+<section class="container text-center py-5">
+    <p class="display-1 fw-bold text-danger mb-0">500</p>
+    <h1 class="h3">Something went wrong</h1>
+    <p class="text-secondary">Please try again. The error has not exposed any private details.</p>
+    <a class="btn btn-primary" href="{{ url_for('landing') }}">Return home</a>
+</section>
+{% endblock %}

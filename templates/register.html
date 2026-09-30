@@ -1,0 +1,31 @@
+{% extends "layout.html" %}
+
+{% block title %}Create account · SmartExpense{% endblock %}
+
+{% block main %}
+<section class="container py-5">
+    <div class="auth-card mx-auto p-4 p-md-5">
+        <h1 class="h2 mb-2">Create your account</h1>
+        <p class="text-secondary mb-4">Start building a clearer picture of your finances.</p>
+        <form method="post" novalidate>
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div class="mb-3">
+                <label class="form-label" for="username">Username</label>
+                <input class="form-control" id="username" name="username" value="{{ request.form.get('username', '') }}" minlength="3" maxlength="30" pattern="[A-Za-z0-9_]+" autocomplete="username" required autofocus>
+                <div class="form-text">3–30 letters, numbers, or underscores.</div>
+            </div>
+            <div class="mb-3">
+                <label class="form-label" for="password">Password</label>
+                <input class="form-control" id="password" name="password" type="password" minlength="8" maxlength="128" autocomplete="new-password" required>
+                <div class="form-text">At least 8 characters, including a letter and number.</div>
+            </div>
+            <div class="mb-4">
+                <label class="form-label" for="confirmation">Confirm password</label>
+                <input class="form-control" id="confirmation" name="confirmation" type="password" autocomplete="new-password" required>
+            </div>
+            <button class="btn btn-primary w-100" type="submit">Create account</button>
+        </form>
+        <p class="text-center text-secondary mt-4 mb-0">Already registered? <a href="{{ url_for('login') }}">Log in</a>.</p>
+    </div>
+</section>
+{% endblock %}

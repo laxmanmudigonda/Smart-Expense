@@ -1,0 +1,10 @@
+{% extends "layout.html" %}
+{% block title %}Invalid request · SmartExpense{% endblock %}
+{% block main %}
+<section class="container text-center py-5">
+    <p class="display-1 fw-bold text-warning mb-0">400</p>
+    <h1 class="h3">Invalid request</h1>
+    <p class="text-secondary">The form expired or could not be verified. Please return and try again.</p>
+    <a class="btn btn-primary" href="{{ url_for('landing') }}">Return home</a>
+</section>
+{% endblock %}

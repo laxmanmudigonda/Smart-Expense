@@ -1,0 +1,61 @@
+{% extends "layout.html" %}
+
+{% block title %}Analytics · SmartExpense{% endblock %}
+
+{% block main %}
+<section class="container py-4 py-md-5" id="analytics-root" data-endpoint="{{ url_for('analytics_data', month=selected_month) }}" data-currency="{{ config.CURRENCY_SYMBOL }}">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+        <div>
+            <p class="text-primary fw-semibold mb-1">Financial insights</p>
+            <h1 class="h2 mb-1">Analytics</h1>
+            <p class="text-secondary mb-0">Trends through {{ month_label }} based on your transactions.</p>
+        </div>
+        <form class="d-flex align-items-end gap-2" method="get">
+            <div>
+                <label class="form-label small" for="month">Ending month</label>
+                <input class="form-control" id="month" name="month" type="month" value="{{ selected_month }}">
+            </div>
+            <button class="btn btn-outline-primary" type="submit">View</button>
+        </form>
+    </div>
+
+    <div class="alert alert-danger d-none" id="analytics-error" role="alert">Analytics data could not be loaded. Please refresh the page.</div>
+    <div class="row g-4">
+        <div class="col-xl-8">
+            <article class="chart-card p-4 h-100">
+                <h2 class="h5">Income versus expenses</h2>
+                <p class="text-secondary small">Last 12 months</p>
+                <div class="chart-wrap"><canvas id="income-expense-chart" aria-label="Income versus expenses by month" role="img"></canvas></div>
+            </article>
+        </div>
+        <div class="col-xl-4">
+            <article class="chart-card p-4 h-100">
+                <h2 class="h5">Spending distribution</h2>
+                <p class="text-secondary small">{{ month_label }}</p>
+                <div class="chart-wrap"><canvas id="category-chart" aria-label="Expense distribution by category" role="img"></canvas></div>
+                <p class="text-center text-secondary d-none" id="category-empty">No expenses for this month.</p>
+            </article>
+        </div>
+        <div class="col-xl-7">
+            <article class="chart-card p-4 h-100">
+                <h2 class="h5">Monthly spending trend</h2>
+                <p class="text-secondary small">Expense movement over time</p>
+                <div class="chart-wrap"><canvas id="spending-trend-chart" aria-label="Monthly expense trend" role="img"></canvas></div>
+            </article>
+        </div>
+        <div class="col-xl-5">
+            <article class="chart-card p-4 h-100">
+                <h2 class="h5">Budget utilization</h2>
+                <p class="text-secondary small">Actual spending compared with category limits</p>
+                <div class="chart-wrap"><canvas id="budget-chart" aria-label="Budget limit and spending comparison" role="img"></canvas></div>
+                <p class="text-center text-secondary d-none" id="budget-empty">No budgets for this month.</p>
+            </article>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+{% endblock %}

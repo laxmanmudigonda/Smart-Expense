@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+
+{% block title %}Categories · SmartExpense{% endblock %}
+
+{% block main %}
+<section class="container py-4 py-md-5">
+    <div class="mb-4">
+        <p class="text-primary fw-semibold mb-1">Organization</p>
+        <h1 class="h2">Categories</h1>
+        <p class="text-secondary">Default categories stay available; your unused custom categories can be renamed or removed.</p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="form-card p-4">
+                <h2 class="h5 mb-3">Create custom category</h2>
+                <form action="{{ url_for('add_category') }}" method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <div class="mb-3">
+                        <label class="form-label" for="name">Name</label>
+                        <input class="form-control" id="name" name="name" maxlength="50" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="type">Type</label>
+                        <select class="form-select" id="type" name="type" required>
+                            <option value="expense">Expense</option>
+                            <option value="income">Income</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary w-100" type="submit">Create category</button>
+                </form>
+            </div>
+        </div>
+        <div class="col-lg-8">
+            <div class="table-card table-responsive">
+                <table class="table align-middle mb-0">
+                    <thead><tr><th>Name</th><th>Type</th><th>Usage</th><th class="text-end">Actions</th></tr></thead>
+                    <tbody>
+                        {% for category in categories %}
+                            <tr>
+                                <td>
+                                    {% if category.is_default %}
+                                        {{ category.name }} <span class="badge text-bg-light">Default</span>
+                                    {% else %}
+                                        <form class="d-flex gap-2" action="{{ url_for('edit_category', category_id=category.id) }}" method="post">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <input class="form-control form-control-sm" name="name" value="{{ category.name }}" maxlength="50" aria-label="Rename {{ category.name }}" required>
+                                            <button class="btn btn-sm btn-outline-primary" type="submit">Save</button>
+                                        </form>
+                                    {% endif %}
+                                </td>
+                                <td><span class="badge bg-{{ 'success' if category.type == 'income' else 'danger' }}-subtle text-{{ 'success' if category.type == 'income' else 'danger' }}">{{ category.type|title }}</span></td>
+                                <td class="text-secondary">{{ category.transaction_count }} transaction{{ '' if category.transaction_count == 1 else 's' }}</td>
+                                <td class="text-end">
+                                    {% if not category.is_default %}
+                                        <form action="{{ url_for('delete_category', category_id=category.id) }}" method="post" onsubmit="return confirm('Delete this category?');">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                            <button class="btn btn-sm btn-outline-danger" type="submit" {% if category.transaction_count or category.budget_count %}disabled title="Category is in use"{% endif %}>Delete</button>
+                                        </form>
+                                    {% else %}
+                                        <span class="text-secondary small">Protected</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

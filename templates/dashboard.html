@@ -1,0 +1,138 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard · SmartExpense{% endblock %}
+
+{% block main %}
+<section class="container py-4 py-md-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+        <div>
+            <p class="text-primary fw-semibold mb-1">Dashboard</p>
+            <h1 class="h2 mb-1">Hello, {{ g.user['username'] }}</h1>
+            <p class="text-secondary mb-0">Your financial overview for {{ month_label }}.</p>
+        </div>
+        <form class="d-flex align-items-end gap-2" method="get">
+            <div>
+                <label class="form-label small" for="month">Reporting month</label>
+                <input class="form-control" id="month" name="month" type="month" value="{{ selected_month }}">
+            </div>
+            <button class="btn btn-outline-primary" type="submit">View</button>
+        </form>
+    </div>
+
+    <div class="row g-3 mb-4">
+        <div class="col-sm-6 col-xl-3">
+            <article class="metric-card h-100 p-4 border-start border-primary border-4">
+                <p class="text-secondary mb-2">Total balance</p>
+                <p class="metric-value mb-0 {{ 'text-danger' if balance_cents < 0 else '' }}">{{ config.CURRENCY_SYMBOL }}{{ balance_cents|money }}</p>
+                <small class="text-secondary">All-time income minus expenses</small>
+            </article>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <article class="metric-card h-100 p-4 border-start border-success border-4">
+                <p class="text-secondary mb-2">Monthly income</p>
+                <p class="metric-value text-success mb-0">{{ config.CURRENCY_SYMBOL }}{{ income_cents|money }}</p>
+                <small class="text-secondary">Received in {{ month_label }}</small>
+            </article>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <article class="metric-card h-100 p-4 border-start border-danger border-4">
+                <p class="text-secondary mb-2">Monthly expenses</p>
+                <p class="metric-value text-danger mb-0">{{ config.CURRENCY_SYMBOL }}{{ expense_cents|money }}</p>
+                <small class="text-secondary">Spent in {{ month_label }}</small>
+            </article>
+        </div>
+        <div class="col-sm-6 col-xl-3">
+            <article class="metric-card h-100 p-4 border-start border-info border-4">
+                <p class="text-secondary mb-2">Monthly savings</p>
+                <p class="metric-value mb-0 {{ 'text-danger' if savings_cents < 0 else 'text-primary' }}">{{ config.CURRENCY_SYMBOL }}{{ savings_cents|money }}</p>
+                <small class="text-secondary">Income minus expenses</small>
+            </article>
+        </div>
+    </div>
+
+    <div class="budget-summary p-4 mb-4">
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3">
+            <div>
+                <h2 class="h5 mb-1">Monthly budget utilization</h2>
+                {% if budget_count %}
+                    <p class="text-secondary mb-0">{{ config.CURRENCY_SYMBOL }}{{ budget_spent_cents|money }} spent of {{ config.CURRENCY_SYMBOL }}{{ budget_limit_cents|money }} across {{ budget_count }} budget{{ '' if budget_count == 1 else 's' }}.</p>
+                {% else %}
+                    <p class="text-secondary mb-0">No budgets are set for {{ month_label }}.</p>
+                {% endif %}
+            </div>
+            <a class="btn btn-outline-primary" href="{{ url_for('budgets', month=selected_month) }}">{{ 'Manage budgets' if budget_count else 'Set a budget' }}</a>
+        </div>
+        {% if budget_count %}
+            <div class="progress mt-3" role="progressbar" aria-label="Overall budget utilization" aria-valuenow="{{ budget_utilization }}" aria-valuemin="0" aria-valuemax="{{ [budget_utilization, 100]|max }}">
+                <div class="progress-bar {{ 'bg-danger' if budget_utilization > 100 else 'bg-warning' if budget_utilization >= 80 else 'bg-primary' }}" style="width: {{ [budget_utilization, 100]|min }}%"></div>
+            </div>
+            <div class="d-flex justify-content-between mt-1 small">
+                <span class="text-secondary">{{ budget_utilization }}% used</span>
+                {% if budget_spent_cents > budget_limit_cents %}
+                    <span class="text-danger fw-semibold">Over by {{ config.CURRENCY_SYMBOL }}{{ (budget_spent_cents - budget_limit_cents)|money }}</span>
+                {% else %}
+                    <span class="text-secondary">{{ config.CURRENCY_SYMBOL }}{{ (budget_limit_cents - budget_spent_cents)|money }} remaining</span>
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="table-card h-100">
+                <div class="d-flex justify-content-between align-items-center p-4 border-bottom">
+                    <h2 class="h5 mb-0">Recent transactions</h2>
+                    <a href="{{ url_for('transactions') }}">View all</a>
+                </div>
+                {% if recent_transactions %}
+                    <div class="table-responsive">
+                        <table class="table align-middle mb-0">
+                            <thead><tr><th>Date</th><th>Description</th><th>Category</th><th class="text-end">Amount</th></tr></thead>
+                            <tbody>
+                                {% for transaction in recent_transactions %}
+                                    <tr>
+                                        <td class="text-nowrap">{{ transaction.transaction_date }}</td>
+                                        <td><a class="text-decoration-none text-body" href="{{ url_for('edit_transaction', transaction_id=transaction.id) }}">{{ transaction.description or 'No description' }}</a></td>
+                                        <td>{{ transaction.category_name }}</td>
+                                        <td class="text-end fw-semibold text-{{ 'success' if transaction.type == 'income' else 'danger' }}">{{ '+' if transaction.type == 'income' else '−' }}{{ config.CURRENCY_SYMBOL }}{{ transaction.amount_cents|money }}</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="p-5 text-center">
+                        <p class="text-secondary">No transactions yet.</p>
+                        <a class="btn btn-primary" href="{{ url_for('add_transaction') }}">Add transaction</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="form-card h-100 p-4">
+                <h2 class="h5 mb-1">Spending by category</h2>
+                <p class="text-secondary small mb-4">{{ month_label }}</p>
+                {% if category_spending %}
+                    {% for category in category_spending %}
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between gap-3 mb-1">
+                                <span>{{ category.name }}</span>
+                                <span class="fw-semibold">{{ config.CURRENCY_SYMBOL }}{{ category.amount_cents|money }}</span>
+                            </div>
+                            <div class="progress" role="progressbar" aria-label="{{ category.name }} spending" aria-valuenow="{{ category.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                <div class="progress-bar" style="width: {{ category.percentage }}%"></div>
+                            </div>
+                            <small class="text-secondary">{{ category.percentage }}% of monthly expenses</small>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <p class="text-secondary mb-3">No expenses recorded for this month.</p>
+                        <a href="{{ url_for('add_transaction') }}">Add an expense</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

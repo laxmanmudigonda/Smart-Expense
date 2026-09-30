@@ -1,0 +1,99 @@
+{% extends "layout.html" %}
+
+{% block title %}Budgets · SmartExpense{% endblock %}
+
+{% block main %}
+<section class="container py-4 py-md-5">
+    <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+        <div>
+            <p class="text-primary fw-semibold mb-1">Spending plan</p>
+            <h1 class="h2 mb-1">Monthly budgets</h1>
+            <p class="text-secondary mb-0">Set limits for expense categories and track actual spending.</p>
+        </div>
+        <form class="d-flex align-items-end gap-2" method="get">
+            <div>
+                <label class="form-label small" for="month-filter">Budget month</label>
+                <input class="form-control" id="month-filter" name="month" type="month" value="{{ selected_month }}" required>
+            </div>
+            <button class="btn btn-outline-primary" type="submit">View</button>
+        </form>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-4">
+            <div class="form-card p-4">
+                <h2 class="h5 mb-1">Create budget</h2>
+                <p class="text-secondary small mb-3">For {{ month_label }}</p>
+                <form action="{{ url_for('add_budget') }}" method="post">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <input type="hidden" name="month" value="{{ selected_month }}">
+                    <div class="mb-3">
+                        <label class="form-label" for="category_id">Expense category</label>
+                        <select class="form-select" id="category_id" name="category_id" required>
+                            <option value="">Choose a category</option>
+                            {% for category in expense_categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label" for="limit">Monthly limit</label>
+                        <div class="input-group">
+                            <span class="input-group-text">{{ config.CURRENCY_SYMBOL }}</span>
+                            <input class="form-control" id="limit" name="limit" type="number" min="0.01" step="0.01" inputmode="decimal" required>
+                        </div>
+                    </div>
+                    <button class="btn btn-primary w-100" type="submit">Create budget</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="col-lg-8">
+            {% if budgets %}
+                <div class="d-grid gap-3">
+                    {% for budget in budgets %}
+                        <article class="budget-card p-4 {{ 'budget-over' if budget.remaining_cents < 0 }}">
+                            <div class="d-flex flex-wrap justify-content-between gap-3 mb-3">
+                                <div>
+                                    <h2 class="h5 mb-1">{{ budget.category_name }}</h2>
+                                    <p class="text-secondary mb-0">{{ config.CURRENCY_SYMBOL }}{{ budget.spent_cents|money }} of {{ config.CURRENCY_SYMBOL }}{{ budget.limit_cents|money }}</p>
+                                </div>
+                                <div class="text-end">
+                                    {% if budget.remaining_cents < 0 %}
+                                        <span class="text-danger fw-semibold">Over by {{ config.CURRENCY_SYMBOL }}{{ (-budget.remaining_cents)|money }}</span>
+                                    {% else %}
+                                        <span class="text-success fw-semibold">{{ config.CURRENCY_SYMBOL }}{{ budget.remaining_cents|money }} remaining</span>
+                                    {% endif %}
+                                    <div class="small text-secondary">{{ budget.utilization }}% utilized</div>
+                                </div>
+                            </div>
+                            <div class="progress mb-3" role="progressbar" aria-label="{{ budget.category_name }} budget utilization" aria-valuenow="{{ budget.utilization }}" aria-valuemin="0" aria-valuemax="{{ [budget.utilization, 100]|max }}">
+                                <div class="progress-bar {{ 'bg-danger' if budget.utilization > 100 else 'bg-warning' if budget.utilization >= 80 else 'bg-primary' }}" style="width: {{ budget.progress_width }}%"></div>
+                            </div>
+                            <div class="d-flex flex-wrap justify-content-end gap-2">
+                                <form class="d-flex gap-2" action="{{ url_for('edit_budget', budget_id=budget.id) }}" method="post">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <div class="input-group input-group-sm budget-limit-input">
+                                        <span class="input-group-text">{{ config.CURRENCY_SYMBOL }}</span>
+                                        <input class="form-control" name="limit" type="number" min="0.01" step="0.01" value="{{ '%.2f'|format(budget.limit_cents / 100) }}" aria-label="New limit for {{ budget.category_name }}" required>
+                                        <button class="btn btn-outline-primary" type="submit">Update</button>
+                                    </div>
+                                </form>
+                                <form action="{{ url_for('delete_budget', budget_id=budget.id) }}" method="post" onsubmit="return confirm('Delete this budget?');">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button class="btn btn-sm btn-outline-danger" type="submit">Delete</button>
+                                </form>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state p-5 text-center">
+                    <h2 class="h4">No budgets for {{ month_label }}</h2>
+                    <p class="text-secondary mb-0">Choose an expense category and set its monthly limit.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %}
